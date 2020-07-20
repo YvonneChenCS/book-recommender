@@ -5,9 +5,11 @@ import sys
 import nltk
 import string
 import re
+import glob
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+
 
 def str_preprocess(s):
     if (s == ''):
@@ -25,18 +27,20 @@ def str_preprocess(s):
         return lemmas
 
 def tfidf_vectorization():
-    tdidf_vectorizer = TfidfVectorizer(analyzer = str_preprocess, )
+    vectorizer = TfidfVectorizer(input='filename')
+    X = vectorizer.fit_transform(glob.glob('./corpus/*'))
+    print("n_samples: %d, n_features: %d" % X.shape)
 
 def get_content(filename):
     with open(filename, 'r') as book_file:
         book = book_file.read()
-    if ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">' in book):
+    if ('!DOCTYPE' in book):
         print('Book file is invalid.')
         return ''
     split_header = book.split('Title: ', 1)
     split_title = split_header[1].split('\n\nAuthor: ', 1)
     title = re.sub(r'\s+', ' ', split_title[0])
-    split_author = split_title[1].split('\n\nRelease Date: ', 1)
+    split_author = split_title[1].split('\n\n', 1)
     author = split_author[0]
     split_date = split_author[1].split('\n\nLanguage: ', 1)
     split_language = split_date[1].split('\n\nCharacter ', 1)
@@ -59,4 +63,4 @@ def get_corpus():
 
 print('Creating corpus...')
 get_corpus()
-
+tfidf_vectorization()
