@@ -22,7 +22,11 @@ def parse_index():
 
 def download_book(bookid):
     if not os.path.isfile(f'./cache/{bookid}.txt'):
+        print(f'Writing {bookid}.txt')
         res = requests.get(f'http://www.gutenberg.org/files/{bookid}/{bookid}-0.txt')
+        if ('!DOCTYPE' in res.text):
+            print(f'Rewriting {bookid}.txt')
+            res = requests.get(f'http://www.gutenberg.org/cache/epub/{bookid}/pg{bookid}.txt')
         open(f'./cache/{bookid}.txt', 'w').write(res.text)
         print(f'Written {bookid}.txt')
 
