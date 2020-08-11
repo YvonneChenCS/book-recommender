@@ -5,11 +5,13 @@ import sys
 import nltk
 import string
 import re
-import glob
+import pathlib
 import pandas as pd
+import multiprocessing as mp
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 from scipy.sparse.linalg import svds
 
 def build_bookinfo():
@@ -20,10 +22,13 @@ def build_bookinfo():
 
 def build_bookscores():
     id_corpus = process_corpus_cache()[1]
-    vectorizer = TfidfVectorizer()
+    vectorizer = HashingVectorizer(ngram_range=(2,2))
     X = vectorizer.fit_transform(list(id_corpus.values()))
-    print("n_samples: %d, n_features: %d" % X.shape)
-    U, s, Vh = svds(X, k = 3)
+    print('Hashing complete')
+    transformer = TfidfTransformer()
+    X = transformer.fit_transform(X)
+    print('n_samples: %d, n_features: %d' % X.shape)
+    U, s, Vh = svds(X, k = 100)
     print(f'U: {U.shape}, s: {s.shape}, Vh: {Vh.shape}')
     bookscores = pd.DataFrame(U, index=list(id_corpus.keys()))
     print('Bookscores: ')
@@ -32,30 +37,38 @@ def build_bookscores():
     print('Eigenvalues: ')
     eigens = pd.DataFrame(s)
     print(eigens)
-    eigens.to_hdf('bookscores.h5', key='eigens', mode='w')
+    eigens.to_hdf('eigens.h5', key='eigens', mode='w')
 
 def get_content(filename):
-    bookid = filename.split('cache2/')[1].split('.')[0]
+    bookid = filename.split('cache/')[1].split('.')[0]
     with open(filename, 'r') as book_file:
         book = book_file.read()
     if ('!DOCTYPE' in book):
         print('Book file is invalid.')
         return '', '', ''
-    split_header = book.split('Title: ', 1)
-    split_title = split_header[1].split('\n\nAuthor: ', 1)
-    title = re.sub(r'\s+', ' ', split_title[0])
-    split_author = split_title[1].split('\n\n', 1)
-    author = split_author[0]
-    author = re.sub('\s+', ' ', author)
-    split_date = split_author[1].split('\n\nLanguage: ', 1)
-    split_language = split_date[1].split('\n\n', 1)
-    if not (split_language[0] == 'English'):
-        print('Book language is not supported.')
+    title = ''
+    author = ''
+    content = ''
+    try: 
+        split_header = book.split('Title: ', 1)
+        split_title = split_header[1].split('\nAuthor: ', 1)
+        title = re.sub(r'\s+', ' ', split_title[0])
+        split_author = split_title[1].split('\n', 1)
+        author = split_author[0]
+        #author = re.sub('\s+', ' ', author)
+        split_date = split_author[1].split('\nLanguage: ', 1)
+        split_language = split_date[1].split('\n', 1)
+        if not (split_language[0] == 'English'):
+            print('Book language is not supported.')
+            return '', '', ''
+        print(f'{title} by {author}')
+        split_begin = split_language[1].split('\n***', 1)
+        split_end = split_begin[1].split('\n***', 1)
+        content = split_end[0]
+    except IndexError as e:
+        print('Book format error')
         return '', '', ''
-    print(f'{title} by {author}')
-    split_begin = split_language[1].split('*** START OF THIS PROJECT GUTENBERG EBOOK', 1)
-    split_end = split_begin[1].split('*** END OF THIS PROJECT GUTENBERG EBOOK', 1)
-    return title, author, split_end[0]
+    return title, author, content
 
 def str_preprocess(s):
     if (s == ''):
@@ -72,27 +85,30 @@ def str_preprocess(s):
         lemmas = [lemmatizer.lemmatize(token, pos = 'v') for token in filtered_tokens]
         return lemmas
 
+def build_corpus_file(filename):
+    print(f'Processing {filename}...')
+    current_dir = pathlib.Path('preprocess.py').parent.absolute()
+    corpus_filename = f'{current_dir}/corpus/corpus_{filename}'
+    if not os.path.isfile(corpus_filename):
+        title, author, content = get_content(f'{current_dir}/cache/{filename}')
+        if content:
+            res = str_preprocess(content)
+            res = ' '.join(res)
+            with open(corpus_filename, 'w+') as corpus_file:
+                print(title, file=corpus_file)
+                print(author, file=corpus_file)
+                corpus_file.write(res)
+
 def build_corpus_cache():
-    os.makedirs('corpus', exist_ok=True)
-    for filename in sorted(os.listdir('cache2')):
-        print(f'Processing {filename}...')
-        corpus_filename = f'/home/yvonne/books/corpus/corpus_{filename}'
-        if not os.path.isfile(corpus_filename):
-            title, author, content = get_content(f'/home/yvonne/books/cache2/{filename}')
-            if content:
-                res = str_preprocess(content)
-                res = ' '.join(res)
-                with open(corpus_filename, 'w+') as corpus_file:
-                    print(title, file=corpus_file)
-                    print(author, file=corpus_file)
-                    corpus_file.write(res)
+    with mp.Pool(5) as p:
+        p.map(build_corpus_file, os.listdir('cache'))
 
 def process_corpus_cache():
     id_info = []
-    #id_corpus = []
     id_corpus = {}
     for filename in sorted(os.listdir('corpus')):
-        filename = f'/home/yvonne/books/corpus/{filename}'
+        current_dir = pathlib.Path('preprocess.py').parent.absolute()
+        filename = f'{current_dir}/corpus/{filename}'
         bookid = filename.split('/')[-1].split('.')[0].split('_')[1]
         with open(filename) as corpus_file:
             title = corpus_file.readline().rstrip()
