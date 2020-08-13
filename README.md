@@ -5,5 +5,5 @@ This is a project that attempts to recommend books similar to user-provided exam
 ## Todo:
  - [x] downloader
  - [x] preprocessor
- - [ ] text analyzer
+ - [x] text analyzer
  - [ ] user interface
