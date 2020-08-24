@@ -21,5 +21,6 @@ def recommend_books():
     bookid = search_books()
     scores = recommend.calculate_distances(bookid)
     scores = scores[['title', 'author']].head()
+    scores['bookid'] = scores.index
     print(scores)
     return scores.to_json(orient='records')        
