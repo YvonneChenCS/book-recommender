@@ -20,16 +20,13 @@ def fuzzy_search(keyword, title_dict):
     current_dir = pathlib.Path('search.py').parent.absolute()
     bookinfo = pd.read_hdf(f'{current_dir}/bookinfo.h5')
     titles = bookinfo['title'].values
-    titles = process.extract(keyword, titles, limit=3)
-    titles = [title[0] for title in titles]
-    search_bookinfo = []
-    for title in titles: 
-        for bookid in title_dict[title]:
-            search_bookinfo.append({
-                'bookid' : bookid,
-                'title' : title,
-                'author' : bookinfo.loc[bookid]['author']
-            })
+    title = process.extractOne(keyword, titles)
+    title = title[0]
+    search_bookinfo = {
+        'bookid' : title_dict[title],
+        'title' : title,
+        'author' : bookinfo.loc[title_dict[title]]['author']
+    }
     df = pd.DataFrame.from_dict(search_bookinfo).set_index('bookid')
     return df
 
