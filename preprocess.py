@@ -22,11 +22,11 @@ def build_bookinfo():
 
 def build_bookscores():
     id_corpus = process_corpus_cache()[1]
-    vectorizer = HashingVectorizer(ngram_range=(2,2))
+    vectorizer = HashingVectorizer(ngram_range=(1,1))
     X = vectorizer.fit_transform(list(id_corpus.values()))
     print('Hashing complete')
-    transformer = TfidfTransformer()
-    X = transformer.fit_transform(X)
+    #transformer = TfidfTransformer()
+    #X = transformer.fit_transform(X)
     print('n_samples: %d, n_features: %d' % X.shape)
     U, s, Vh = svds(X, k = 100)
     print(f'U: {U.shape}, s: {s.shape}, Vh: {Vh.shape}')
@@ -122,6 +122,13 @@ def process_corpus_cache():
         id_corpus[bookid] = corpus
     return id_info, id_corpus
 
+directory = "corpus"
+current_dir = pathlib.Path('preprocess.py').parent.absolute()
+path = os.path.join(current_dir, directory)
+try:
+    os.mkdir(path)
+except FileExistsError:
+    print('Corpus directory already exists.')
 print('Creating corpus...')
 build_corpus_cache()
 print()
