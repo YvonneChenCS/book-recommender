@@ -1,17 +1,13 @@
 import recommend
 import search
 import json
-from flask import Flask, request, jsonify
-from flask_cors import CORS, cross_origin
+from flask import Flask, request
+from flask_cors import CORS
 
-app = Flask(__name__)
-#app.config['ENV'] = 'development'
-#app.config['DEBUG'] = True
-#app.config['TESTING'] = True
-#app.logger.setLevel(logging.DEBUG)
+app = Flask(__name__, static_url_path='')
 CORS(app)
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['POST', 'GET'])
 def recommend_books():
     keyword = request.form['keyword']
     def search_books():
@@ -23,4 +19,12 @@ def recommend_books():
     scores = scores[['title', 'author']].head()
     scores['bookid'] = scores.index
     print(scores)
-    return scores.to_json(orient='records')        
+    return scores.to_json(orient='records')
+
+@app.route('/gutenberg', methods=['POST', 'GET'])
+def root():
+    return app.send_static_file('index.html')
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)
+
