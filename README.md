@@ -9,4 +9,4 @@ This is a web app based on a NLP content-based recommendation system, which atte
  - [x] user interface
  
 ## Sample screenshot of the web app:
-![alt text](https://github.com/YvonneChenCS/book-recommender/blob/master/Sample%20screenshot.png)
+![alt text](https://github.com/YvonneChenCS/book-recommender/blob/master/Screenshot.png)
