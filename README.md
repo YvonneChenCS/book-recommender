@@ -1,6 +1,6 @@
 # Gutenberg Book Recommender
 
-This is a web app based on a NLP content-based recommendation system, which attempts to recommend books similar to user-provided examples using natural language processing principles. Visit Gutenberg Book Recomender at http://yvonnechen.dev/gutenberg.
+Web app based on a book recommendation system, which attempts to recommend books similar to user-provided preferences. Visit Gutenberg Book Recommender at http://yvonnechen.dev/gutenberg.
 
 ## Todo:
  - [x] downloader
