@@ -23,8 +23,5 @@
     "test-dependencies": {
         "direct": {},
         "indirect": {}
-    },
-    "devDependencies": {
-        "elm": "^0.19.1-3"
     }
 }
