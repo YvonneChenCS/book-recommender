@@ -114,7 +114,7 @@ update msg model =
 search : Model -> Cmd Msg
 search model =   
     Http.post
-        { url = "http://18.188.185.76:8000"
+        { url = "http://0.0.0.0:8000"
         , body = Http.multipartBody [Http.stringPart "keyword" model.keyword]
         , expect = Http.expectJson GotSearch searchDecoder
         }
