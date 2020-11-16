@@ -3,8 +3,8 @@
 Web app based on a book recommendation system, which attempts to recommend books similar to user-provided preferences. 
 
 /*:
-Visit Gutenberg Book Recommender at http://yvonnechen.dev/gutenberg.
-*/
+     Visit Gutenberg Book Recommender at http://yvonnechen.dev/gutenberg.
+ */
 
 ## Todo:
  - [x] downloader
