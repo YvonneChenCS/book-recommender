@@ -9,6 +9,7 @@ Web app based on a book recommendation system, which attempts to recommend books
  - [x] preprocessor
  - [x] text analyzer
  - [x] user interface
+ 
  Deployment on Netlify is in progress! 
  
 ## Sample screenshot of the web app:
