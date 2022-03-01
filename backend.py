@@ -3,10 +3,10 @@
 import recommend
 import search
 import json
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask_cors import CORS
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="/static")
 CORS(app)
 
 @app.route('/', methods=['POST', 'GET'])
@@ -25,7 +25,7 @@ def recommend_books():
 
 @app.route('/gutenberg', methods=['POST', 'GET'])
 def root():
-    return app.send_static_file('index.html')
+    return render_template('index.html')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
